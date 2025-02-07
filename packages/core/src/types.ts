@@ -642,6 +642,16 @@ export interface Operation<
   context: OperationContext;
 }
 
+type Result<Data> =
+  | {
+      data: Data;
+      error?: undefined;
+    }
+  | {
+      data?: undefined;
+      error: CombinedError;
+    };
+
 /** A result for an `Operation` carrying a full GraphQL response.
  *
  * @remarks
@@ -652,10 +662,10 @@ export interface Operation<
  * always match the fully merged type of a GraphQL request. It essentially is a postprocessed version
  * of a GraphQL API response.
  */
-export interface OperationResult<
+export type OperationResult<
   Data = any,
   Variables extends AnyVariables = AnyVariables,
-> {
+> = {
   /** The [operation]{@link Operation} which has been executed. */
   /** The `Operation` which this `OperationResult` is for.
    *
@@ -668,22 +678,6 @@ export interface OperationResult<
    * for and to filter and deliver this result to the right place and consumers.
    */
   operation: Operation<Data, Variables>;
-  /** The result of the execution of the GraphQL operation.
-   * @see {@link https://spec.graphql.org/October2021/#sec-Data} for the GraphQL Data Response spec
-   */
-  data?: Data;
-  /** Contains a description of errors raised by GraphQL fields or the request itself by the API.
-   *
-   * @remarks
-   * The `error` of an `OperationResult` is set to a {@link CombinedError} if the GraphQL API response
-   * contained any GraphQL errors.
-   *
-   * GraphQL errors occur when either a GraphQL request was prevented from executing entirely
-   * (at which point `data: undefined` is set) or when one or more fields of a GraphQL request
-   * failed to execute. Due to the latter, you may receive partial data when a GraphQL request
-   * partially failed.
-   */
-  error?: CombinedError;
   /** Additional metadata that a GraphQL API may choose to send that is out of spec.
    * @see {@link https://spec.graphql.org/October2021/#sel-EAPHJCAACCoGu9J} for the GraphQL Response spec
    */
@@ -713,7 +707,7 @@ export interface OperationResult<
    * For GraphQL subscriptions, this flag will always be set to `true`.
    */
   hasNext: boolean;
-}
+} & Result<Data>;
 
 /** The input parameters a `Client` passes to an `Exchange` when it's created.
  *

@@ -38,13 +38,18 @@ export const makeResult = (
   const defaultHasNext = operation.kind === 'subscription';
   return {
     operation,
-    data: result.data,
-    error: Array.isArray(result.errors)
-      ? new CombinedError({
-          graphQLErrors: result.errors,
-          response,
-        })
-      : undefined,
+    ...(Array.isArray(result.errors)
+      ? {
+          error: new CombinedError({
+            graphQLErrors: result.errors,
+            response,
+          }),
+          data: undefined,
+        }
+      : {
+          error: undefined,
+          data: result.data,
+        }),
     extensions: result.extensions ? { ...result.extensions } : undefined,
     hasNext: result.hasNext == null ? defaultHasNext : result.hasNext,
     stale: false,
